@@ -27,7 +27,7 @@ import org.hibernate.SessionFactory
 import org.springframework.context.ApplicationContext
 
 class EnversGrailsPlugin {
-    def version = "0.4.4"
+    def version = "0.5.0.BUILD-SNAPSHOT"
     def grailsVersion = "2.1.1 > *"
     def loadAfter = ['hibernate']
 

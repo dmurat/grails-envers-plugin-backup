@@ -3,6 +3,11 @@ grails-envers-plugin
 
 This is not a real full-scaled README file, but a brief changelog of this fork.
 
+0.5.0.BUILD-SNAPSHOT
+-------
+ * Multiple data sources support
+ * config option envers.auditedDataSourceNames for specifying list of audited data source names like in "envers.auditedDataSourceNames = ['demoRegistryPerson', 'demoRegistryTechno']"
+
 0.4.4
 -------
  * Included SpringSource Tool Suite files
