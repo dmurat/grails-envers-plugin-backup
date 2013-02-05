@@ -11,3 +11,4 @@ target-eclipse/
 .link_to_grails_plugins
 plugin.xml
 grails-envers*.zip
+grails-envers*.zip.sha1

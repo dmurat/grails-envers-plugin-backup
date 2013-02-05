@@ -18,31 +18,34 @@ grails.project.work.dir = 'target'
 grails.project.source.level = 1.6
 
 grails.project.dependency.resolution = {
+    inherits 'global'
+    log 'warn'
 
-	inherits 'global'
-	log 'warn'
+    repositories {
+        grailsCentral()
+        mavenLocal()
+        mavenCentral()
+    }
 
-	repositories {
-		grailsCentral()
-		mavenLocal()
-		mavenCentral()
-	}
+    dependencies {
+        compile ('org.hibernate:hibernate-envers:3.6.10.Final') {
+            excludes 'ant', 'cglib', 'commons-logging', 'commons-logging-api', 'h2',
+                     'hibernate-commons-annotations', 'hibernate-core', 'hibernate-entitymanager',
+                     'hibernate-jpa-2.0-api', 'hibernate-testing', 'hibernate-tools', 'javassist',
+                     'jcl-over-slf4j', 'junit', 'mysql-connector-java', 'slf4j-api', 'slf4j-log4j12',
+                     'testng'
+        }
+    }
 
-	dependencies {
-		compile ('org.hibernate:hibernate-envers:3.6.10.Final') {
-			excludes 'ant', 'cglib', 'commons-logging', 'commons-logging-api', 'h2',
-			         'hibernate-commons-annotations', 'hibernate-core', 'hibernate-entitymanager',
-			         'hibernate-jpa-2.0-api', 'hibernate-testing', 'hibernate-tools', 'javassist',
-			         'jcl-over-slf4j', 'junit', 'mysql-connector-java', 'slf4j-api', 'slf4j-log4j12',
-			         'testng'
-		}
-	}
+    plugins {
+        build(":release:2.2.0") {
+            export = false
+        }
 
-	plugins {
-		build(":release:2.1.0", ":rest-client-builder:1.0.2") {
-			export = false
-		}
-
-		compile(":hibernate:$grailsVersion")
-	}
+        compile(":hibernate:$grailsVersion") {
+            export = false
+        }
+    }
 }
+
+grails.release.scm.enabled = false
