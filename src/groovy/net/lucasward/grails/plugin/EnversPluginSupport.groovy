@@ -85,33 +85,35 @@ class EnversPluginSupport {
         String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener, GrailsDomainClass gc,
         SessionFactory sessionFactory)
     {
-        def findAllRevisionsBy =
-          new RevisionsOfEntityQueryMethod(dataSourceName, datasourceAwareAuditEventListener, sessionFactory, gc.clazz, new PropertyNameCriteria())
+        def findAllRevisionsBy = new RevisionsOfEntityQueryMethod(sessionFactory, gc.clazz, new PropertyNameCriteria())
 
         MetaClass mc = gc.getMetaClass()
         gc.persistentProperties.each { GrailsDomainClassProperty prop ->
-            generateFindAllMethod(prop, mc, findAllRevisionsBy)
+            generateFindAllMethod(dataSourceName, datasourceAwareAuditEventListener, prop, mc, findAllRevisionsBy)
         }
 
         generateFindAllMethod(
-            gc.identifier, mc,
-            new RevisionsOfEntityQueryMethod(dataSourceName, datasourceAwareAuditEventListener, sessionFactory, gc.clazz, new IdentityCriteria()))
+            dataSourceName, datasourceAwareAuditEventListener,
+            gc.identifier, mc, new RevisionsOfEntityQueryMethod(sessionFactory, gc.clazz, new IdentityCriteria()))
     }
 
     //Generate the methods that work on just 'AuditReader', and not and AuditQuery
-    static generateAuditReaderMethods(GrailsDomainClass gc, SessionFactory sessionFactory) {
+    static generateAuditReaderMethods(
+        String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener, GrailsDomainClass gc,
+        SessionFactory sessionFactory)
+    {
         def getCurrentRevision = new GetCurrentRevisionQuery(sessionFactory, gc.clazz)
         def getRevisions = new GetRevisionsQuery(sessionFactory, gc.clazz)
         def findAtRevision = new FindAtRevisionQuery(sessionFactory, gc.clazz)
         MetaClass mc = gc.getMetaClass()
 
         mc.static.getCurrentRevision = {
-            getCurrentRevision.query()
+            getCurrentRevision.query(dataSourceName, datasourceAwareAuditEventListener)
         }
 
         mc.retrieveRevisions = {
             try {
-                return getRevisions.query(delegate.id)
+                return getRevisions.query(dataSourceName, datasourceAwareAuditEventListener, delegate.id)
             }
             catch (NotAuditedException ignored) {
                 // This indicates call to entity.revisions or entity.getProperties()
@@ -121,19 +123,23 @@ class EnversPluginSupport {
         }
 
         mc.findAtRevision = { revisionNumber ->
-            findAtRevision.query(delegate.id, revisionNumber)
+            findAtRevision.query(dataSourceName, datasourceAwareAuditEventListener, delegate.id, revisionNumber as Number)
         }
     }
 
-    private static generateFindAllMethod(GrailsDomainClassProperty prop, MetaClass mc, method) {
+    private static generateFindAllMethod(
+        String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener, GrailsDomainClassProperty prop, MetaClass mc,
+        RevisionsOfEntityQueryMethod method)
+    {
         def propertyName = prop.name
         def methodName = "findAllRevisionsBy${propertyName.capitalize()}"
+
         mc.static."$methodName" = { argument ->
-            method.query(propertyName, argument, [:])
+            method.query(dataSourceName, datasourceAwareAuditEventListener, propertyName, argument, [:])
         }
 
         mc.static."$methodName" = { argument, Map parameters ->
-            method.query(propertyName, argument, parameters)
+            method.query(dataSourceName, datasourceAwareAuditEventListener, propertyName, argument, parameters)
         }
     }
 }

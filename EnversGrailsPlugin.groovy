@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import net.lucasward.grails.plugin.AuditEventListenerForDefaultDatasource
 import net.lucasward.grails.plugin.DatasourceAwareAuditEventListener
 import net.lucasward.grails.plugin.EnversPluginSupport
 import net.lucasward.grails.plugin.RevisionsOfEntityQueryMethod
@@ -50,20 +49,21 @@ class EnversGrailsPlugin {
     def description = 'Plugin to integrate grails with Hibernate Envers'
     def documentation = "http://grails.org/plugin/envers"
 
-	 def license = "APACHE"
-	 def developers = [
+    def license = "APACHE"
+    def developers = [
          [name: 'Jay Hogan', email: ''],
          [name: 'Damir Murat', email: ''],
          [name: 'Matija Folnovic', email: ''],
          [name: 'Alex Abdugafarov', email: 'fswork90@gmail.com'],
          [name: 'Burt Beckwith', email: 'burt@burtbeckwith.com']
-     ] // TODO
-//	 def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
-	 def scm = [url: 'https://github.com/frozenspider/grails-envers-plugin']
+    ]
+
+    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
+    def scm = [url: 'https://github.com/frozenspider/grails-envers-plugin']
 
     def doWithSpring = {
         datasourceAwareAuditEventListener(net.lucasward.grails.plugin.DatasourceAwareAuditEventListener) {
-          auditedDataSourceNames = ['blabla', 'DEFAULT']
+          auditedDataSourceNames = ['blabla', 'DEFAULT']  // TODO dmurat: implement plugin config
         }
 
         hibernateEventListeners(HibernateEventListeners) {
@@ -106,7 +106,7 @@ class EnversGrailsPlugin {
 
         application.domainClasses.each { GrailsDomainClass gc ->
             if (EnversPluginSupport.isAudited(gc) && GrailsHibernateUtil.usesDatasource(gc, dataSourceName)) {
-                def getAllRevisions = new RevisionsOfEntityQueryMethod(dataSourceName, datasourceAwareAuditEventListener, sessionFactory, gc.clazz)
+                def getAllRevisions = new RevisionsOfEntityQueryMethod(sessionFactory, gc.clazz)
                 MetaClass mc = gc.getMetaClass()
 
                 mc.static.findAllRevisions = {
@@ -118,7 +118,7 @@ class EnversGrailsPlugin {
                 }
 
                 EnversPluginSupport.generateFindAllMethods(dataSourceName, datasourceAwareAuditEventListener, gc, sessionFactory)
-                EnversPluginSupport.generateAuditReaderMethods(gc, sessionFactory)
+                EnversPluginSupport.generateAuditReaderMethods(dataSourceName, datasourceAwareAuditEventListener, gc, sessionFactory)
             }
         }
     }

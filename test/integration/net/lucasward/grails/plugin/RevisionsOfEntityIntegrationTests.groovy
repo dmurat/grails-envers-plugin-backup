@@ -16,6 +16,7 @@
 
 package net.lucasward.grails.plugin
 
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.envers.AuditReader
@@ -28,29 +29,26 @@ import static net.lucasward.grails.plugin.TestData.getCreateHibernateCustomerWit
 import static net.lucasward.grails.plugin.TestData.getDeleteAuditTables
 
 class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
-
     def transactional = false
-
     def springSecurityService
 
     SessionFactory sessionFactory
     Session session
     AuditReader reader
+    DatasourceAwareAuditEventListener datasourceAwareAuditEventListener
 
     User currentUser
 
     protected void setUp() {
         super.setUp()
         session = sessionFactory.currentSession
-        reader = AuditReaderFactory.get(sessionFactory.currentSession)
-
+        reader = datasourceAwareAuditEventListener.createAuditReader(sessionFactory.currentSession, GrailsDomainClassProperty.DEFAULT_DATA_SOURCE)
         currentUser = new User(userName: 'foo', realName: 'Bar').save(flush:  true, failOnError: true)
         SpringSecurityServiceHolder.springSecurityService.currentUser = currentUser
     }
 
     protected void tearDown() {
         super.tearDown()
-
         deleteAuditTables(session)
     }
 
@@ -171,7 +169,7 @@ class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
 
     //test to see if Envers will work with a field level annotated domain class
     void testFieldLevelAudit() {
-        def id
+        Long id = null
         User.withTransaction() {
             User user = new User(userName: "field", realName: "Annotated")
             user.save(flush: true)
