@@ -15,13 +15,17 @@
  */
 
 import net.lucasward.grails.plugin.AuditEventListenerForDefaultDatasource
+import net.lucasward.grails.plugin.DatasourceAwareAuditEventListener
 import net.lucasward.grails.plugin.EnversPluginSupport
 import net.lucasward.grails.plugin.RevisionsOfEntityQueryMethod
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.orm.hibernate.HibernateEventListeners
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.SessionFactory
+import org.springframework.context.ApplicationContext
 
 class EnversGrailsPlugin {
     def version = "0.4.4"
@@ -58,42 +62,62 @@ class EnversGrailsPlugin {
 	 def scm = [url: 'https://github.com/frozenspider/grails-envers-plugin']
 
     def doWithSpring = {
-        auditEventListenerForDefaultDatasource(AuditEventListenerForDefaultDatasource)
+        datasourceAwareAuditEventListener(net.lucasward.grails.plugin.DatasourceAwareAuditEventListener) {
+          auditedDataSourceNames = ['blabla', 'DEFAULT']
+        }
 
         hibernateEventListeners(HibernateEventListeners) {
             listenerMap = [
-                'post-insert': auditEventListenerForDefaultDatasource,
-                'post-update': auditEventListenerForDefaultDatasource,
-                'post-delete': auditEventListenerForDefaultDatasource,
-                'pre-collection-update': auditEventListenerForDefaultDatasource,
-                'pre-collection-remove': auditEventListenerForDefaultDatasource,
-                'post-collection-recreate': auditEventListenerForDefaultDatasource
+                'post-insert': datasourceAwareAuditEventListener,
+                'post-update': datasourceAwareAuditEventListener,
+                'post-delete': datasourceAwareAuditEventListener,
+                'pre-collection-update': datasourceAwareAuditEventListener,
+                'pre-collection-remove': datasourceAwareAuditEventListener,
+                'post-collection-recreate': datasourceAwareAuditEventListener
             ]
         }
     }
 
     def doWithDynamicMethods = { ctx ->
-        for (entry in ctx.getBeansOfType(SessionFactory)) {
-            SessionFactory sessionFactory = entry.value
-            registerDomainMethods(application, sessionFactory)
+        def datasourceNames = []
+        if (ctx.containsBean('dataSource')) {
+            datasourceNames << GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+        }
+
+        for (name in application.config.keySet()) {
+            if (name.startsWith('dataSource_')) {
+                datasourceNames << name - 'dataSource_'
+            }
+        }
+
+        for (String datasourceName in datasourceNames) {
+            boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+            String suffix = isDefault ? '' : '_' + datasourceName
+            SessionFactory dataSourceSessionFactory = ctx.getBean("sessionFactory$suffix") as SessionFactory
+            registerDomainMethods(application, dataSourceSessionFactory, datasourceName, ctx)
         }
     }
 
-    private void registerDomainMethods(GrailsApplication application, SessionFactory sessionFactory) {
+    private static void registerDomainMethods(
+        GrailsApplication application, SessionFactory sessionFactory, String dataSourceName, ApplicationContext applicationContext)
+    {
+        DatasourceAwareAuditEventListener datasourceAwareAuditEventListener =
+          applicationContext.getBean('datasourceAwareAuditEventListener') as DatasourceAwareAuditEventListener
+
         application.domainClasses.each { GrailsDomainClass gc ->
-            def getAllRevisions = new RevisionsOfEntityQueryMethod(sessionFactory, gc.clazz)
-            if (EnversPluginSupport.isAudited(gc)) {
+            if (EnversPluginSupport.isAudited(gc) && GrailsHibernateUtil.usesDatasource(gc, dataSourceName)) {
+                def getAllRevisions = new RevisionsOfEntityQueryMethod(dataSourceName, datasourceAwareAuditEventListener, sessionFactory, gc.clazz)
                 MetaClass mc = gc.getMetaClass()
 
                 mc.static.findAllRevisions = {
-                    getAllRevisions.query(null, null, [:])
+                    getAllRevisions.query(dataSourceName, datasourceAwareAuditEventListener, null, null, [:])
                 }
 
                 mc.static.findAllRevisions = { Map parameters ->
-                    getAllRevisions.query(null, null, parameters)
+                    getAllRevisions.query(dataSourceName, datasourceAwareAuditEventListener, null, null, parameters)
                 }
 
-                EnversPluginSupport.generateFindAllMethods(gc, sessionFactory)
+                EnversPluginSupport.generateFindAllMethods(dataSourceName, datasourceAwareAuditEventListener, gc, sessionFactory)
                 EnversPluginSupport.generateAuditReaderMethods(gc, sessionFactory)
             }
         }

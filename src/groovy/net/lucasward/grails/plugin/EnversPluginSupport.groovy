@@ -81,13 +81,21 @@ class EnversPluginSupport {
         return entity
     }
 
-    static generateFindAllMethods(GrailsDomainClass gc, SessionFactory sessionFactory) {
-        def findAllRevisionsBy = new RevisionsOfEntityQueryMethod(sessionFactory, gc.clazz, new PropertyNameCriteria())
+    static generateFindAllMethods(
+        String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener, GrailsDomainClass gc,
+        SessionFactory sessionFactory)
+    {
+        def findAllRevisionsBy =
+          new RevisionsOfEntityQueryMethod(dataSourceName, datasourceAwareAuditEventListener, sessionFactory, gc.clazz, new PropertyNameCriteria())
+
         MetaClass mc = gc.getMetaClass()
-        gc.persistantProperties.each { GrailsDomainClassProperty prop ->
+        gc.persistentProperties.each { GrailsDomainClassProperty prop ->
             generateFindAllMethod(prop, mc, findAllRevisionsBy)
         }
-        generateFindAllMethod(gc.identifier, mc, new RevisionsOfEntityQueryMethod(sessionFactory, gc.clazz, new IdentityCriteria()))
+
+        generateFindAllMethod(
+            gc.identifier, mc,
+            new RevisionsOfEntityQueryMethod(dataSourceName, datasourceAwareAuditEventListener, sessionFactory, gc.clazz, new IdentityCriteria()))
     }
 
     //Generate the methods that work on just 'AuditReader', and not and AuditQuery
@@ -96,18 +104,22 @@ class EnversPluginSupport {
         def getRevisions = new GetRevisionsQuery(sessionFactory, gc.clazz)
         def findAtRevision = new FindAtRevisionQuery(sessionFactory, gc.clazz)
         MetaClass mc = gc.getMetaClass()
+
         mc.static.getCurrentRevision = {
             getCurrentRevision.query()
         }
+
         mc.retrieveRevisions = {
-			try {
-				return getRevisions.query(delegate.id)
-			} catch (NotAuditedException ex) {
-				// This indicates call to entity.revisions or entity.getProperties()
-				// In second case, we shouldn't throwing an exception clearly is unexpected behavior
-				return null
-			}
+            try {
+                return getRevisions.query(delegate.id)
+            }
+            catch (NotAuditedException ignored) {
+                // This indicates call to entity.revisions or entity.getProperties()
+                // In second case, we shouldn't throwing an exception clearly is unexpected behavior
+                return null
+            }
         }
+
         mc.findAtRevision = { revisionNumber ->
             findAtRevision.query(delegate.id, revisionNumber)
         }
