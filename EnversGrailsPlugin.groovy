@@ -62,8 +62,11 @@ class EnversGrailsPlugin {
     def scm = [url: 'https://github.com/frozenspider/grails-envers-plugin']
 
     def doWithSpring = {
+        def configuredAuditedDataSourceNames = application.config?.envers?.auditedDataSourceNames
         datasourceAwareAuditEventListener(net.lucasward.grails.plugin.DatasourceAwareAuditEventListener) {
-          auditedDataSourceNames = ['blabla', 'DEFAULT']  // TODO dmurat: implement plugin config
+          if (configuredAuditedDataSourceNames) {
+            auditedDataSourceNames = configuredAuditedDataSourceNames
+          }
         }
 
         hibernateEventListeners(HibernateEventListeners) {
