@@ -120,6 +120,10 @@ class EnversGrailsPlugin {
                     getAllRevisions.query(dataSourceName, datasourceAwareAuditEventListener, null, null, parameters)
                 }
 
+                mc.static.countAllRevisions = {
+                    getAllRevisions.count(dataSourceName, datasourceAwareAuditEventListener)
+                }
+
                 EnversPluginSupport.generateFindAllMethods(dataSourceName, datasourceAwareAuditEventListener, gc, sessionFactory)
                 EnversPluginSupport.generateAuditReaderMethods(dataSourceName, datasourceAwareAuditEventListener, gc, sessionFactory)
             }

@@ -21,7 +21,7 @@ import net.lucasward.grails.plugin.criteria.EnversCriteria
 
 import org.hibernate.SessionFactory
 import org.hibernate.envers.AuditReader
-import org.hibernate.envers.AuditReaderFactory
+import org.hibernate.envers.query.AuditEntity
 import org.hibernate.envers.query.AuditQuery
 
 /**
@@ -34,26 +34,19 @@ class RevisionsOfEntityQueryMethod {
     EnversCriteria criteria
     PropertyNameAuditOrder auditOrder = new PropertyNameAuditOrder()
     PaginationHandler paginationHandler = new PaginationHandler()
-//    String dataSourceName
-//    DatasourceAwareAuditEventListener datasourceAwareAuditEventListener
 
     RevisionsOfEntityQueryMethod(
-//        String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener,
         SessionFactory sessionFactory, Class clazz, EnversCriteria criteria)
     {
-//        this.dataSourceName = dataSourceName
-//        this.datasourceAwareAuditEventListener
         this.sessionFactory = sessionFactory
         this.clazz = clazz
         this.criteria = criteria
     }
 
     RevisionsOfEntityQueryMethod(
-//        String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener,
         SessionFactory sessionFactory, Class clazz)
     {
         this(
-//            dataSourceName, datasourceAwareAuditEventListener,
             sessionFactory, clazz, new DoNothingCriteria())
     }
 
@@ -69,5 +62,17 @@ class RevisionsOfEntityQueryMethod {
       paginationHandler.addPagination(query, parameters)
 
       return query.resultList.collect { EnversPluginSupport.collapseRevision(it) }
+    }
+
+    def count(
+        String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener)
+    {
+      AuditReader auditReader = datasourceAwareAuditEventListener.createAuditReader(sessionFactory.currentSession, dataSourceName)
+
+      def auditQueryCreator = auditReader.createQuery()
+      AuditQuery query = auditQueryCreator.forRevisionsOfEntity(clazz, false, true)
+      query.addProjection(AuditEntity.revisionNumber().count())
+
+      return query.singleResult
     }
 }
