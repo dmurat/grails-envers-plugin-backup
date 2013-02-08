@@ -7,6 +7,7 @@ This is not a real full-scaled README file, but a brief changelog of this fork.
 -------
  * Multiple data sources support
  * config option envers.auditedDataSourceNames for specifying list of audited data source names like in "envers.auditedDataSourceNames = ['demoRegistryPerson', 'demoRegistryTechno']"
+ * countAllRevisions method added to audited domain classes
 
 0.4.4
 -------
