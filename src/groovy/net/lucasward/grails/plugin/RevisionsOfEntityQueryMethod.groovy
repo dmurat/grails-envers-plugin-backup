@@ -75,4 +75,8 @@ class RevisionsOfEntityQueryMethod {
 
       return query.singleResult
     }
+
+    AuditReader getAuditReader(String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener) {
+      return datasourceAwareAuditEventListener.createAuditReader(sessionFactory.currentSession, dataSourceName)
+    }
 }
