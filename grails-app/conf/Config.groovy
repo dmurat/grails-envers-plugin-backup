@@ -15,16 +15,26 @@
  */
 
 log4j = {
-    info  'org.codehaus.groovy.grails',
+    error 'org.codehaus.groovy.grails.web.servlet',  //  controllers
+          'org.codehaus.groovy.grails.web.pages', //  GSP
+          'org.codehaus.groovy.grails.web.sitemesh', //  layouts
+          'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
+          'org.codehaus.groovy.grails.web.mapping', // URL mapping
+          'org.codehaus.groovy.grails.commons', // core / classloading
+          'org.codehaus.groovy.grails.plugins', // plugins
+          'org.codehaus.groovy.grails.orm.hibernate', // hibernate integration
           'org.springframework',
+
           'net.sf.ehcache.hibernate'
 
-    debug 'net.lucasward',
-          'org.hibernate',
-          'grails.app',
-          'org.grails'
+    info  'org.hibernate.annotations.common.Version',
+          'org.hibernate.cfg.AnnotationBinder',
+          'org.hibernate.cfg.Configuration',
+          'org.hibernate.cfg.Environment',
+          'org.hibernate.cfg.HbmBinder',
+          'org.hibernate.cfg.SettingsFactory',
+          'org.hibernate.connection.ConnectionProviderFactory',
+          'org.hibernate.dialect.Dialect'
 
-    root {
-        debug 'stdout'
-    }
+    debug 'net.lucasward'
 }
