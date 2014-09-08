@@ -20,7 +20,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.envers.AuditReader
-import org.hibernate.envers.AuditReaderFactory
 import org.hibernate.envers.RevisionType
 import org.hibernate.envers.query.AuditEntity
 import static net.lucasward.grails.plugin.TestData.getCreate2OrderEntriesWith1Modification
@@ -29,8 +28,8 @@ import static net.lucasward.grails.plugin.TestData.getCreateHibernateCustomerWit
 import static net.lucasward.grails.plugin.TestData.getDeleteAuditTables
 
 class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
+    @SuppressWarnings("GroovyUnusedDeclaration")
     def transactional = false
-    def springSecurityService
 
     SessionFactory sessionFactory
     Session session
@@ -105,8 +104,8 @@ class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
         createHibernateCustomerWith1Modification()
 
         Customer gormUser = Customer.findByName("PureGorm")
-        def revisions = reader.createQuery().forRevisionsOfEntity(Customer.class, false, true).add(AuditEntity.id().eq(gormUser.id)).resultList
-        //assertGormCustomerRevisions(revisions)
+        def revisions = reader.createQuery().forRevisionsOfEntity(Customer.class, false, true).add(AuditEntity.id().eq(gormUser.id)).resultList.collect { EnversPluginSupport.collapseRevision(it) }
+        assertGormCustomerRevisions(revisions)
     }
 
     //Id has to be handled differently, so we should test it separately
@@ -116,7 +115,7 @@ class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
         assertGormCustomerRevisions(revisions)
     }
 
-    //if I search by a clas, such as address, does it work?
+    //if I search by a class, such as address, does it work?
     void testFindByAssociatedDomainClass() {
         Customer customer = createGormCustomerWith2Modifications()
         def revisions = Customer.findAllRevisionsByAddress(customer.address)
@@ -150,7 +149,7 @@ class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
 
 
     void testRetrieveCustomersCreatedInTheSameTransaction() {
-        def customers = TestData.create2CustomersInOneTransaction()
+        TestData.create2CustomersInOneTransaction()
         def results = Customer.findAllRevisionsByEmail("tester@envers.org")
         assert results.size() == 3
         assert results[0].revisionEntity == results[1].revisionEntity
@@ -167,29 +166,78 @@ class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
         assert revisions.size() == 3
     }
 
-    //test to see if Envers will work with a field level annotated domain class
-    void testFieldLevelAudit() {
+    void testFieldLevelInclusiveAudit() {
         Long id = null
-        User.withTransaction() {
-            User user = new User(userName: "field", realName: "Annotated")
+        UserInclusivePartiallyAudited.withTransaction() {
+            UserInclusivePartiallyAudited user = new UserInclusivePartiallyAudited(userName: "field", realName: "Annotated")
             user.save(flush: true)
             id = user.id
         }
 
-        User.withTransaction() {
-            User user = User.get(id)
+        UserInclusivePartiallyAudited.withTransaction() {
+            UserInclusivePartiallyAudited user = UserInclusivePartiallyAudited.get(id)
             user.userName = "newField"
             user.save(flush: true)
         }
 
-        User.withTransaction() {
-            User user = User.get(id)
+        UserInclusivePartiallyAudited.withTransaction() {
+            UserInclusivePartiallyAudited user = UserInclusivePartiallyAudited.get(id)
             user.realName = "Field Annotated"
             user.save(flush: true)
         }
 
-        def results = reader.createQuery().forRevisionsOfEntity(User.class, false, true).resultList
-//        assert results.size() == 2
+        def results = reader.createQuery().forRevisionsOfEntity(UserInclusivePartiallyAudited.class, false, true).resultList
+        assert results.size() == 2
+
+        UserInclusivePartiallyAudited user = UserInclusivePartiallyAudited.get(id)
+        def revisions = user.retrieveRevisions()
+
+        def userRevision = user.findAtRevision(revisions[0])
+        assert userRevision.realName == "Annotated"
+        assert userRevision.userName == null
+
+        userRevision = user.findAtRevision(revisions[1])
+        assert userRevision.realName == "Field Annotated"
+        assert userRevision.userName == null
+    }
+
+    void testFieldLevelExclusiveAudit() {
+        Long id = null
+        UserExclusivePartiallyAudited.withTransaction() {
+            UserExclusivePartiallyAudited user = new UserExclusivePartiallyAudited(userName: "field", realName: "Annotated")
+            user.save(flush: true)
+            id = user.id
+        }
+
+        UserExclusivePartiallyAudited.withTransaction() {
+            UserExclusivePartiallyAudited user = UserExclusivePartiallyAudited.get(id)
+            user.userName = "newField"
+            user.save(flush: true)
+        }
+
+        UserExclusivePartiallyAudited.withTransaction() {
+            UserExclusivePartiallyAudited user = UserExclusivePartiallyAudited.get(id)
+            user.realName = "Field Annotated"
+            user.save(flush: true)
+        }
+
+        def results = reader.createQuery().forRevisionsOfEntity(UserExclusivePartiallyAudited.class, false, true).resultList
+        assert results.size() == 3
+
+        UserExclusivePartiallyAudited user = UserExclusivePartiallyAudited.get(id)
+        def revisions = user.retrieveRevisions()
+
+        def userRevision = user.findAtRevision(revisions[0])
+        assert userRevision.realName == null
+        assert userRevision.userName == "field"
+
+        userRevision = user.findAtRevision(revisions[1])
+        assert userRevision.realName == null
+        assert userRevision.userName == "newField"
+
+        userRevision = user.findAtRevision(revisions[2])
+        assert userRevision.realName == null
+        assert userRevision.userName == "newField"
     }
 
     void testSaveCustomerWithoutAddress() {
@@ -223,7 +271,7 @@ class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
     //        assertGormCustomerRevisions(revisions)
     //    }
 
-    private def assertGormCustomerRevisions(List results) {
+    private static def assertGormCustomerRevisions(List results) {
         assert results.size() == 3
         def r = results[0]
         assert r.name == "PureGorm"

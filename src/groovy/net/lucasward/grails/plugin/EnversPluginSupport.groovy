@@ -52,11 +52,8 @@ class EnversPluginSupport {
         }
     }
 
-    /**
-     * For right now, only the presence of the @Audited annotation on the class will mean it's annotated
-     */
     static isAudited = { GrailsDomainClass gc ->
-        return AnnotationUtils.findAnnotation(gc.clazz, Audited) != null
+        return (AnnotationUtils.findAnnotation(gc.clazz, Audited) != null) || (gc.clazz.getMethods().find{AnnotationUtils.findAnnotation(it, Audited)} != null)
     }
 
     /**
