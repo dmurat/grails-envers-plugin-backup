@@ -27,8 +27,8 @@ import org.hibernate.SessionFactory
 import org.springframework.context.ApplicationContext
 
 class EnversGrailsPlugin {
-    def version = "0.5.0.BUILD-SNAPSHOT"
-    def grailsVersion = "2.1.1 > *"
+    def version = "0.5.0"
+    def grailsVersion = "2.1.0 > *"
     def loadAfter = ['hibernate']
 
     def pluginExcludes = [
@@ -52,18 +52,18 @@ class EnversGrailsPlugin {
     def license = "APACHE"
     def developers = [
          [name: 'Jay Hogan', email: ''],
-         [name: 'Damir Murat', email: ''],
-         [name: 'Matija Folnovic', email: ''],
+         [name: 'Damir Murat', email: 'damir.murat.git@gmail.com'],
+         [name: 'Matija Folnović', email: ''],
          [name: 'Alex Abdugafarov', email: 'fswork90@gmail.com'],
          [name: 'Burt Beckwith', email: 'burt@burtbeckwith.com']
     ]
 
-    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
-    def scm = [url: 'https://github.com/frozenspider/grails-envers-plugin']
+    def issueManagement = [ system: "github", url: "https://github.com/lucaslward/grails-envers-plugin/issues" ]
+    def scm = [url: 'https://github.com/lucaslward/grails-envers-plugin']
 
     def doWithSpring = {
         def configuredAuditedDataSourceNames = application.config?.envers?.auditedDataSourceNames
-        datasourceAwareAuditEventListener(net.lucasward.grails.plugin.DatasourceAwareAuditEventListener) {
+        datasourceAwareAuditEventListener(DatasourceAwareAuditEventListener) {
           if (configuredAuditedDataSourceNames) {
             auditedDataSourceNames = configuredAuditedDataSourceNames
           }
