@@ -25,8 +25,7 @@ import org.hibernate.envers.query.AuditQuery
  * @author Lucas Ward
  */
 class PropertyNameCriteria implements EnversCriteria {
-
-    void addCriteria(AuditQuery query, Class clazz, String propertyName, argument) {
+    def addCriteria(AuditQuery query, Class clazz, String propertyName, Object argument) {
         query.add(AuditEntity.property(propertyName).eq(argument))
     }
 }

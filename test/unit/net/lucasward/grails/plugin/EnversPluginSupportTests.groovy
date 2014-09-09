@@ -29,17 +29,17 @@ class EnversPluginSupportTests {
 
     void testIsAudited() {
         def gc = new DefaultGrailsDomainClass(Address)
-        assert EnversPluginSupport.isAudited(gc)
+        assert EnversPluginSupport.isAudited(gc) == true
     }
 
     void testIsNotAudited() {
         def gc = new DefaultGrailsDomainClass(State)
-        assert !EnversPluginSupport.isAudited(gc)
+        assert EnversPluginSupport.isAudited(gc) == false
     }
 
     void testIsAuditedAtFieldLevelOnly() {
         def gc = new DefaultGrailsDomainClass(User)
-        assert EnversPluginSupport.isAudited(gc)
+        assert EnversPluginSupport.isAudited(gc) == true
     }
 
     void testCollapseRevisions() {

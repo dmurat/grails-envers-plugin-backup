@@ -69,12 +69,15 @@ class PropertyNameAuditOrder {
         if (revisionProperty != null) {
             return AuditEntity.revisionProperty(revisionProperty)
         }
+
         if (propertyName == 'revisionNumber') {
             return AuditEntity.revisionNumber()
         }
+
         if (propertyName == 'revisionType') {
             return AuditEntity.revisionType()
         }
+
         if (propertyName == 'id') {
             return new AuditProperty(new OriginalIdPropertyName(propertyName));
         }

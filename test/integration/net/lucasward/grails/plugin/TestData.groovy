@@ -38,7 +38,7 @@ class TestData {
         session.createSQLQuery("delete from revinfo").executeUpdate()
     }
 
-    static create2CustomersInOneTransaction = {
+    static def create2CustomersInOneTransaction = {
 
         def customers = []
         Customer.withTransaction {
@@ -66,8 +66,9 @@ class TestData {
         return customers
     }
 
-    static createGormCustomerWith2Modifications = {
-        Customer customer
+    static def createGormCustomerWith2Modifications = {
+        Customer customer = null
+
         Customer.withTransaction {
             def address = new Address(city: "Chicago", zip: "60640")
             address.save()
@@ -88,11 +89,13 @@ class TestData {
             customer.address.zip = "10003"
             customer.save(flush: true)
         }
+
         return customer
     }
 
-    static createHibernateCustomerWith1Modification = {
-        Customer customer
+    static def createHibernateCustomerWith1Modification = {
+        Customer customer = null
+
         Customer.withTransaction {
             def address = new Address(city: "Boston", zip: "02109")
             address.save()
@@ -106,27 +109,20 @@ class TestData {
             customer.address.zip = "02108"
             customer.save(flush: true)
         }
+
         return customer
     }
 
-    static create2OrderEntriesWith1Modification = { Customer customer, Date time ->
+    static def create2OrderEntriesWith1Modification = { Customer customer, Date time ->
         Customer.withTransaction {
-            OrderEntry order = new OrderEntry(
-                    date: time - 1,
-                    amount: 5.3,
-                    numberOfItems: 2,
-                    customer: customer)
+            OrderEntry order = new OrderEntry(date: time - 1, amount: 5.3, numberOfItems: 2, customer: customer)
             order.save()
             customer.orders << order
             customer.save(flush:true)
         }
 
         Customer.withTransaction {
-            OrderEntry order = new OrderEntry(
-                    date: time,
-                    amount: 5.3,
-                    numberOfItems: 2,
-                    customer: customer)
+            OrderEntry order = new OrderEntry(date: time, amount: 5.3, numberOfItems: 2, customer: customer)
             order.save()
             customer.orders << order
             customer.save(flush:true)

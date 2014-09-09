@@ -40,7 +40,7 @@ class EnversPluginSupport {
 
     private static DOMAIN_INITIALIZERS = new ConcurrentHashMap()
 
-    static getAllRevisions(Class clazz, SessionFactory sessionFactory) {
+    static def getAllRevisions(Class clazz, SessionFactory sessionFactory) {
         Session session = sessionFactory.currentSession
         return AuditReaderFactory.get(sessionFactory.currentSession).createQuery().forRevisionsOfEntity(clazz, false, true).resultList
     }
@@ -52,7 +52,7 @@ class EnversPluginSupport {
         }
     }
 
-    static isAudited = { GrailsDomainClass gc ->
+    static def isAudited = { GrailsDomainClass gc ->
         return (AnnotationUtils.findAnnotation(gc.clazz, Audited) != null) || (gc.clazz.getMethods().find{AnnotationUtils.findAnnotation(it, Audited)} != null)
     }
 
@@ -78,7 +78,7 @@ class EnversPluginSupport {
         return entity
     }
 
-    static generateFindAllMethods(
+    static void generateFindAllMethods(
         String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener, GrailsDomainClass gc,
         SessionFactory sessionFactory)
     {
@@ -95,7 +95,7 @@ class EnversPluginSupport {
     }
 
     //Generate the methods that work on just 'AuditReader', and not and AuditQuery
-    static generateAuditReaderMethods(
+    static void generateAuditReaderMethods(
         String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener, GrailsDomainClass gc,
         SessionFactory sessionFactory)
     {
@@ -124,7 +124,7 @@ class EnversPluginSupport {
         }
     }
 
-    private static generateFindAllMethod(
+    private static void generateFindAllMethod(
         String dataSourceName, DatasourceAwareAuditEventListener datasourceAwareAuditEventListener, GrailsDomainClassProperty prop, MetaClass mc,
         RevisionsOfEntityQueryMethod method)
     {

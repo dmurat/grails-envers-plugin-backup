@@ -61,7 +61,6 @@ class InheritanceIntegrationTests extends GroovyTestCase {
     }
 
     void testStoringEntry() {
-      assert true
         Date today = new Date()
 
         BaseballPlayer player

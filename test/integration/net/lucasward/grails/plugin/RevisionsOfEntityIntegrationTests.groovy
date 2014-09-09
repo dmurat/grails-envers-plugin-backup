@@ -28,7 +28,6 @@ import static net.lucasward.grails.plugin.TestData.getCreateHibernateCustomerWit
 import static net.lucasward.grails.plugin.TestData.getDeleteAuditTables
 
 class RevisionsOfEntityIntegrationTests extends GroovyTestCase {
-    @SuppressWarnings("GroovyUnusedDeclaration")
     def transactional = false
 
     SessionFactory sessionFactory
