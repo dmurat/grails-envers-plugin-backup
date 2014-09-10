@@ -154,15 +154,10 @@ tree.
 
 ### Changelog
 #### 0.5.0
- * Multiple data sources support
- * Config option envers.auditedDataSourceNames for specifying
- list of audited dat. For example, in `Config.groovy` add something like this source names like in "envers.auditedDataSourceNames = ['demoRegistryPerson', 'demoRegistryTechno']"
- * countAllRevisions method added to audited domain class
-   ```
-   envers.auditedDataSourceNames = ['DEFAULT', 'demo001', 'demo002']
-   ```
-   If you omit a data source from
- * Support for adding `@Audited` annotation exclusively on field level (without a need to place it on class level)
+ * Multiple data sources support.
+ * Config option `envers.auditedDataSourceNames` for specifying list of audited data sources.
+ * countAllRevisions method added to audited domain class.
+ * Support for adding `@Audited` annotation exclusively on field level (without a need to place it on class level).
 
 
 ## DOCs for original source tree
