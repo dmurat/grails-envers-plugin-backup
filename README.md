@@ -11,7 +11,7 @@ For general usage of this plugin, please read following resources:
 This particular fork (v0.5.0) adds several features to the plugin which are missing from current official version of plugin (v2.1.0).
 Most important feature is support for using envers plugin with multiple data sources.
 
-Please note that I don't have immediate plans to maintain this fork in the future, exept maybe implementing fixes if needed. I released it in my own
+Please note that I don't have immediate plans to maintain this fork in the future, except maybe implementing fixes if needed. I released it in my own
 maven/github repo just to make some things simpler for me. However, I do plan to contact original plugin author about merging this fork into main tree.
 If somebody else likes to step in, please do by all means. You are free to use this code in any way you like.
 
@@ -37,7 +37,7 @@ tree.
    ```
    You can omit snapshots repository if you don't need it (recommended).
 
-* Add plugin dependeny in `BuildConfig.groovy`:
+ * Add plugin dependency in `BuildConfig.groovy`:
    ```groovy
    ...
    grails.project.dependency.resolution = {
@@ -145,7 +145,7 @@ tree.
          properties {
            // envers properties
            org.hibernate.envers.audit_table_suffix = "_HISTORY"
-           org.hibernate.envers.default_schema = "EVIDRPREGH"
+           org.hibernate.envers.default_schema = "HISTORY"
          }
        }
      }
