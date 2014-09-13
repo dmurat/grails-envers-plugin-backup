@@ -44,16 +44,16 @@ class EnversGrailsPlugin {
     ]
 
     def author = "Lucas Ward"
-    def authorEmail = ""
+    def authorEmail = "lucaslward@gmail.com"
     def title = "Grails Envers Plugin"
     def description = 'Plugin to integrate grails with Hibernate Envers'
     def documentation = "http://grails.org/plugin/envers"
 
     def license = "APACHE"
     def developers = [
-         [name: 'Jay Hogan', email: ''],
+         [name: 'Jay Hogan', email: 'jay_hogan@sra.com'],
          [name: 'Damir Murat', email: 'damir.murat.git@gmail.com'],
-         [name: 'Matija Folnović', email: ''],
+         [name: 'Matija Folnović', email: 'mfolnovic@gmail.com'],
          [name: 'Alex Abdugafarov', email: 'fswork90@gmail.com'],
          [name: 'Burt Beckwith', email: 'burt@burtbeckwith.com']
     ]
