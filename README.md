@@ -152,6 +152,21 @@ tree.
    }
    ```
 
+### Constraints
+ * Single audited entity supports only single data source. This means that for audited entity something like this is not supported:
+   ```groovy
+   @Audited
+   class ZipCode {
+     String code
+
+     static mapping = {
+       datasources(['lookup', 'DEFAULT'])  // <-- NOT SUPPORTED auditing over multiple data sources for a single audited entity
+     }
+   }   
+   ``` 
+ * Audited datasources need to be explicitly configured (`envers.auditedDataSourceNames` in `Config.groovy`). This might be useful in some cases. 
+   However, by default it should not be required as audited data sources can be found from definition of domain classes. Future releases of a plugin might fix this.
+
 ### Changelog
 #### 0.5.0
  * Multiple data sources support.
