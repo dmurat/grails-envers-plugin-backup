@@ -171,7 +171,8 @@ tree.
 #### 0.5.0
  * Multiple data sources support.
  * Config option `envers.auditedDataSourceNames` for specifying list of audited data sources.
- * countAllRevisions method added to audited domain class.
+ * `countAllRevisions` method added to audited domain class.
+ * `getAuditReader` method added to domain classes for direct access to envers API.
  * Support for adding `@Audited` annotation exclusively on field level (without a need to place it on class level).
 
 
